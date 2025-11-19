@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizFlow - Learn & Master</title>
+    <!-- Load Tailwind CSS with forms/container-queries plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Lexend Font and Material Symbols -->
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    
+    <script id="tailwind-config">
+        // Tailwind Configuration
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+
+    <!-- Link to the PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,eyJkZW5zaXR5Ijo0LjAsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwibmFtZSI6IlF1aXpGbG93Iiwic2hvcnRfbmFtZSI6IlF1aXpGbG93Iiwic3RhcnRfdXJsIjoiLz91dG09aG9tZXNjcmVlbiIsImJhY2tncm91bmRfY29sb3IiOiIjRkZGRkZGIiwidGhlbWVfY29sb3IiOiIjMTBiOTg0IiwiY2FjaGluZyI6Im5ldHdvcktGaXJzdCIsImljb25zIjpbeyJzcmMiOiJodHRwczovL3BsYWNlaG9sZC5jby8xOTJ4MTk0LzEwYjk4MT90ZXh0PVFVWiIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9wbmciLCJwdXJwb3NlcyI6ImFueSJ9LHsic3JjIjoiaHR0cHM6Ly9wbGFjZWhvbGwuY28vNTEyeDUxMi8xMGI5ODE/dGV4dD1RVVoiLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiZGlhZ3JhbS9wbmciLCJwdXJwb3NlcyI6Im1hc2thYmxlIn1dfQ==">
+    
+    <style>
+        /* Material Symbols setup */
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        /* Set base height for full-screen feel */
+        body {
+            min-height: max(884px, 100dvh);
+            transition: background-color 0.3s;
+        }
+    </style>
+</head>
+
+<!-- Initializing body with light mode and new theme classes -->
+<body class="light bg-background-light font-display text-[#111618] antialiased">
+    
+    <div id="app" class="relative flex h-screen min-h-screen w-full flex-col group/design-root overflow-y-auto max-w-4xl mx-auto">
+        <!-- Main Application Content Will Be Injected Here -->
+    </div>
+
+    <!-- PWA Service Worker Script Content -->
+    <script id="sw-script" type="text/plain">
+        const CACHE_NAME = 'quiz-flow-cache-v1';
+        const urlsToCache = [
+            '/',
+            '/index.html',
+            'https://cdn.tailwindcss.com?plugins=forms,container-queries',
+            'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap',
+            'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined',
+        ];
+
+        self.addEventListener('install', (event) => {
+            event.waitUntil(
+                caches.open(CACHE_NAME)
+                    .then((cache) => {
+                        console.log('Opened cache and cached shell assets');
+                        return cache.addAll(urlsToCache);
+                    })
+            );
+        });
+
+        self.addEventListener('fetch', (event) => {
+            event.respondWith(
+                caches.match(event.request)
+                    .then((response) => {
+                        if (response) {
+                            return response;
+                        }
+                        const fetchRequest = event.request.clone();
+
+                        return fetch(fetchRequest).then(
+                            (response) => {
+                                if(!response || response.status !== 200 || response.type !== 'basic') {
+                                    return response;
+                                }
+                                const responseToCache = response.clone();
+                                caches.open(CACHE_NAME)
+                                    .then((cache) => {
+                                        cache.put(event.request, responseToCache);
+                                    });
+
+                                return response;
+                            }
+                        ).catch(error => {
+                            console.error('Fetch failed:', error);
+                        });
+                    })
+            );
+        });
+
+        self.addEventListener('activate', (event) => {
+            const cacheWhitelist = [CACHE_NAME];
+            event.waitUntil(
+                caches.keys().then((cacheNames) => {
+                    return Promise.all(
+                        cacheNames.map((cacheName) => {
+                            if (cacheWhitelist.indexOf(cacheName) === -1) {
+                                return caches.delete(cacheName);
+                            }
+                        })
+                    );
+                })
+            );
+        });
+    </script>
+
+
+    <script>
+        // --- QUIZ DATA (MOCK DATA) ---
+        const MOCK_QUIZ_DATA = [
+            {
+                id: 1,
+                subject: "Web Development Fundamentals",
+                classId: 'Tech',
+                chapters: [
+                    {
+                        id: 101,
+                        title: "HTML Structure",
+                        quizzes: [
+                            {
+                                question: "What does HTML stand for?",
+                                options: ["Hyper Text Markup Language", "Hyperlink and Text Management Language", "High-level Textual Modeling Language", "Home Tool Markup Language"],
+                                answer: 0,
+                            },
+                            {
+                                question: "Which HTML tag is used to define an internal style sheet?",
+                                options: ["<script>", "<style>", "<css>", "<link>"],
+                                answer: 1,
+                            },
+                        ],
+                    },
+                    {
+                        id: 102,
+                        title: "CSS Styling",
+                        quizzes: [
+                            {
+                                question: "Which property is used to change the background color?",
+                                options: ["color", "bgcolor", "background-color", "background"],
+                                answer: 2,
+                            },
+                            {
+                                question: "What does the 'C' in CSS stand for?",
+                                options: ["Creative", "Cascading", "Computer", "Compact"],
+                                answer: 1,
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                id: 2,
+                subject: "JavaScript Programming",
+                classId: 'Tech',
+                chapters: [
+                    {
+                        id: 201,
+                        title: "Variables and Scope",
+                        quizzes: [
+                            {
+                                question: "Which keyword is used to declare a constant in modern JavaScript?",
+                                options: ["var", "let", "const", "static"],
+                                answer: 2,
+                            },
+                            {
+                                question: "What is the result of '5' + 3 in JavaScript?",
+                                options: ["8", "53", "NaN", "Error"],
+                                answer: 1,
+                            },
+                        ],
+                    },
+                ],
+            },
+             {
+                id: 3,
+                subject: "Historical Events",
+                classId: 'History',
+                chapters: [
+                    {
+                        id: 301,
+                        title: "World War II Basics",
+                        quizzes: [
+                            {
+                                question: "When did World War II officially begin?",
+                                options: ["1938", "1939", "1940", "1941"],
+                                answer: 1,
+                            },
+                            {
+                                question: "What was the code name for the Battle of Normandy?",
+                                options: ["Operation Market Garden", "Operation Barbarossa", "Operation Overlord", "Operation Citadel"],
+                                answer: 2,
+                            },
+                        ],
+                    },
+                ],
+            },
+        ];
+        
+        // --- LOCAL STORAGE KEY ---
+        const USER_PROFILE_KEY = 'quizflow_user_profile';
+        const PROGRESS_KEY = 'quizflow_progress';
+
+        // --- APP STATE AND CORE LOGIC ---
+        const App = {
+            state: {
+                view: 'onboarding', // 'onboarding', 'home', 'quiz', 'results', 'support'
+                
+                // User Profile
+                username: '',
+                userClass: '',
+                
+                // Quiz State
+                currentSubject: null,
+                currentChapter: null,
+                currentQuiz: [],
+                currentQuestionIndex: 0,
+                score: 0,
+                selectedOptionIndex: null,
+                isAnswerChecked: false,
+                isDarkMode: false,
+                
+                // Progress Data
+                userProgress: {}, // Stores progress: { 'SubjectName-ChapterName': { percentage } }
+            },
+
+            // --- LOCAL STORAGE FUNCTIONS ---
+            loadState() {
+                try {
+                    const profileJson = localStorage.getItem(USER_PROFILE_KEY);
+                    const progressJson = localStorage.getItem(PROGRESS_KEY);
+
+                    if (profileJson) {
+                        const profile = JSON.parse(profileJson);
+                        this.state.username = profile.username || '';
+                        this.state.userClass = profile.userClass || '';
+                        
+                        // Decide the initial view
+                        this.state.view = (this.state.username && this.state.userClass) ? 'home' : 'onboarding';
+                    }
+                    
+                    if (progressJson) {
+                        this.state.userProgress = JSON.parse(progressJson);
+                    }
+                    
+                } catch (e) {
+                    console.error("Error loading state from localStorage:", e);
+                }
+            },
+            
+            saveProfile() {
+                try {
+                    const profile = {
+                        username: this.state.username,
+                        userClass: this.state.userClass,
+                    };
+                    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(profile));
+                } catch (e) {
+                    console.error("Error saving profile to localStorage:", e);
+                }
+            },
+            
+            saveProgress() {
+                 try {
+                    localStorage.setItem(PROGRESS_KEY, JSON.stringify(this.state.userProgress));
+                } catch (e) {
+                    console.error("Error saving progress to localStorage:", e);
+                }
+            },
+            
+            saveQuizResult() {
+                const { score, currentQuiz, currentSubject, currentChapter } = App.state;
+                
+                const total = currentQuiz.length;
+                const percentage = (score / total) * 100;
+                
+                // Create a unique key for the chapter progress
+                const progressKey = `${currentSubject.replace(/\s/g, '')}-${currentChapter.replace(/\s/g, '')}`;
+
+                const newProgressEntry = {
+                    percentage: parseFloat(percentage.toFixed(1)),
+                };
+
+                // Check if this is a new high score
+                const existingProgress = App.state.userProgress[progressKey];
+                if (existingProgress && existingProgress.percentage >= newProgressEntry.percentage) {
+                    console.log("Not a high score. Skipping save.");
+                    return;
+                }
+
+                // Update the local state
+                App.state.userProgress = {
+                    ...App.state.userProgress,
+                    [progressKey]: newProgressEntry
+                };
+                
+                // Save to local storage
+                App.saveProgress();
+            },
+
+
+            // --- RENDER FUNCTIONS ---
+            render() {
+                const appContainer = document.getElementById('app');
+                appContainer.innerHTML = ''; // Clear existing content
+
+                const { view } = this.state;
+                let mainContentElement;
+                let footerElement = null;
+
+                if (view !== 'onboarding') {
+                    // Render common header for all non-onboarding views
+                    const headerElement = this.renderHeader();
+                    appContainer.appendChild(headerElement);
+                }
+
+                // Determine main content and potential footer
+                switch (view) {
+                    case 'onboarding':
+                        mainContentElement = this.renderOnboardingView();
+                        break;
+                    case 'home':
+                        mainContentElement = this.renderHomeView();
+                        break;
+                    case 'quiz':
+                        mainContentElement = this.renderQuizView();
+                        footerElement = this.renderQuizFooter();
+                        break;
+                    case 'results':
+                        mainContentElement = this.renderResultsView();
+                        break;
+                    case 'support':
+                        mainContentElement = this.renderSupportView();
+                        break;
+                    default:
+                        mainContentElement = this.renderHomeView();
+                }
+
+                // Append main content
+                if (mainContentElement) {
+                    appContainer.appendChild(mainContentElement);
+                }
+
+                // Append footer
+                if (footerElement) {
+                    appContainer.appendChild(footerElement);
+                }
+                
+                // Ensure dark mode class is set on body based on current state
+                const body = document.body;
+                if (this.state.isDarkMode) {
+                    body.classList.add('dark');
+                    body.classList.remove('light');
+                } else {
+                    body.classList.remove('dark');
+                    body.classList.add('light');
+                }
+            },
+            
+            renderOnboardingView() {
+                const main = document.createElement('main');
+                // Use a different main class for onboarding to center everything
+                main.className = 'flex flex-1 flex-col items-center justify-center px-4 pt-8 pb-4 w-full';
+                
+                // Note: The select dropdown must match the MOCK_QUIZ_DATA classId values ('Tech', 'History', etc.)
+                const options = [
+                    { value: 'Tech', label: 'Technology / Web Dev' },
+                    { value: 'History', label: 'History' },
+                    { value: 'Science', label: 'Science' },
+                ];
+                
+                main.innerHTML = `
+                    <div class="p-8 w-full max-w-sm text-center bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700">
+                        <h2 class="text-3xl font-extrabold text-primary mb-2">Welcome to QuizFlow</h2>
+                        <p class="text-[#617f89] dark:text-gray-400 mb-6">Enter your details to get started.</p>
+
+                        <div class="space-y-4 text-left">
+                            <div>
+                                <label for="username" class="block text-sm font-medium text-[#111618] dark:text-gray-200 mb-1">Your Name</label>
+                                <input type="text" id="username-input" value="${this.state.username}" placeholder="e.g., Jane Doe"
+                                       class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-[#111618] dark:text-gray-100 focus:ring-primary focus:border-primary">
+                            </div>
+
+                            <div>
+                                <label for="class" class="block text-sm font-medium text-[#111618] dark:text-gray-200 mb-1">Your Class / Subject Focus</label>
+                                <select id="class-input"
+                                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-[#111618] dark:text-gray-100 focus:ring-primary focus:border-primary">
+                                    <option value="" disabled ${!this.state.userClass ? 'selected' : ''}>Select a class...</option>
+                                    ${options.map(opt => `<option value="${opt.value}" ${this.state.userClass === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                                </select>
+                                <p class="mt-1 text-xs text-[#617f89] dark:text-gray-500">This helps us show relevant quizzes.</p>
+                            </div>
+                        </div>
+
+                        <button onclick="App.startOnboarding()"
+                            class="mt-8 w-full px-6 h-12 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/30 transition-transform duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98]">
+                            <span class="truncate">Start Learning</span>
+                        </button>
+                    </div>
+                `;
+                return main;
+            },
+
+            startOnboarding() {
+                const usernameInput = document.getElementById('username-input');
+                const classInput = document.getElementById('class-input');
+                
+                const username = usernameInput.value.trim();
+                const userClass = classInput.value;
+
+                if (!username || !userClass) {
+                    App.showMessage('Please enter your name and select a class/focus to continue.', 'error');
+                    return;
+                }
+
+                this.state.username = username;
+                this.state.userClass = userClass;
+                this.saveProfile();
+                this.setView('home');
+            },
+
+
+            renderHeader() {
+                const { view } = this.state;
+                const header = document.createElement('header');
+                const userName = this.state.username || 'Learner';
+                const userClass = this.state.userClass || 'General';
+
+                // Apply header styles from the provided design
+                header.className = 'sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm shadow-md';
+
+                let navContent = '';
+                if (view === 'quiz') {
+                    const { currentQuiz, currentQuestionIndex, currentSubject } = this.state;
+                    const totalQuestions = currentQuiz.length;
+                    const progressPercentage = ((currentQuestionIndex) / totalQuestions) * 100;
+                    
+                    navContent = `
+                        <div class="flex items-center p-4">
+                            <button class="flex size-12 shrink-0 items-center justify-start text-[#111618] dark:text-gray-100" onclick="App.setView('home')">
+                                <span class="material-symbols-outlined">close</span>
+                            </button>
+                            <h2 class="flex-1 text-center text-lg font-bold leading-tight tracking-[-0.015em] text-[#111618] dark:text-gray-100">
+                                ${currentSubject}
+                            </h2>
+                            <div class="flex w-12 shrink-0 items-center justify-end">
+                                <p class="text-base font-bold leading-normal tracking-[0.015em] text-primary">${currentQuestionIndex + 1}/${totalQuestions}</p>
+                            </div>
+                        </div>
+                        <div class="px-4 pb-2">
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="h-2 flex-1 rounded-full bg-gray-200 dark:bg-gray-700">
+                                    <div class="h-2 rounded-full bg-primary transition-all duration-300 ease-out" style="width: ${progressPercentage}%;"></div>
+                                </div>
+                                <p class="text-sm font-medium text-[#617f89] dark:text-gray-400">Quiz In Progress</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Header for home, results, and support views
+                    navContent = `
+                        <div class="flex justify-between items-center p-4">
+                            <div class="flex flex-col">
+                                <h1 class="text-2xl font-bold text-primary cursor-pointer" onclick="App.setView('home')">
+                                    QuizFlow
+                                </h1>
+                                <p class="text-xs text-[#617f89] dark:text-gray-400 mt-1">
+                                    Welcome, <span class="text-sm font-semibold text-[#111618] dark:text-gray-100">${userName}</span> (<span class="text-primary">${userClass}</span>)
+                                </p>
+                            </div>
+                            <div class="flex space-x-2 items-center">
+                                <button onclick="App.setView('onboarding')" title="Change User/Class" class="p-2 text-[#111618] dark:text-gray-100 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                                    <span class="material-symbols-outlined">person</span>
+                                </button>
+                                <button onclick="App.toggleDarkMode()" class="p-2 text-[#111618] dark:text-gray-100 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                                    <span class="material-symbols-outlined" id="dark-mode-icon">${this.state.isDarkMode ? 'light_mode' : 'dark_mode'}</span>
+                                </button>
+                                <button onclick="App.setView('support')" class="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-xl shadow-md transition-transform duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98]">
+                                    Support Us
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                header.innerHTML = navContent;
+                return header;
+            },
+
+            renderHomeView() {
+                const { userProgress, userClass } = this.state;
+                const div = document.createElement('main');
+                div.className = 'flex flex-1 flex-col px-4 pt-8 pb-4';
+                
+                // Filter quiz data based on userClass (or show all if class is not found)
+                const filteredData = MOCK_QUIZ_DATA.filter(subject => subject.classId === userClass || !subject.classId);
+                
+                if (filteredData.length === 0) {
+                     div.innerHTML = `
+                        <div class="p-8 text-center bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+                            <h2 class="text-3xl font-bold text-red-500 mb-4">No Quizzes Found</h2>
+                            <p class="text-[#617f89] dark:text-gray-400">There are no quizzes available for the **${userClass}** focus area yet. Please select a different focus area on the user page.</p>
+                             <button onclick="App.setView('onboarding')" class="mt-6 px-6 h-12 bg-primary text-white font-bold rounded-xl">Change Focus</button>
+                        </div>
+                     `;
+                     return div;
+                }
+
+                div.innerHTML = `
+                    <h2 class="text-3xl font-bold text-[#111618] dark:text-white mb-6 border-b border-primary/50 pb-2">Your **${userClass}** Chapters</h2>
+                    ${filteredData.map(subject => `
+                        <div class="mb-8 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+                            <h3 class="text-2xl font-bold text-primary mb-4">${subject.subject}</h3>
+                            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                ${subject.chapters.map(chapter => {
+                                    const progressKey = `${subject.subject.replace(/\s/g, '')}-${chapter.title.replace(/\s/g, '')}`;
+                                    const progress = userProgress[progressKey];
+                                    const isCompleted = progress && progress.percentage > 0;
+                                    const percentage = progress ? progress.percentage : 0;
+                                    const badgeClass = percentage >= 70 ? 'bg-green-500 text-white' : 'bg-red-500 text-white';
+
+                                    return `
+                                        <div onclick="App.startQuiz(${subject.id}, ${chapter.id})" 
+                                             class="cursor-pointer p-4 bg-background-light dark:bg-gray-700 hover:bg-primary/10 rounded-xl transition duration-200 ease-in-out shadow-sm border border-gray-200 dark:border-gray-600 flex flex-col justify-between">
+                                            <div>
+                                                <p class="font-semibold text-lg text-[#111618] dark:text-gray-100">${chapter.title}</p>
+                                                <span class="text-sm text-[#617f89] dark:text-gray-400">${chapter.quizzes.length} Questions</span>
+                                            </div>
+                                            ${isCompleted ? `
+                                                <div class="mt-2 flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-600">
+                                                    <span class="text-sm font-medium text-primary">High Score:</span>
+                                                    <span class="px-2 py-0.5 rounded-full text-xs font-bold ${badgeClass}">${percentage}%</span>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+                return div;
+            },
+
+            renderQuizView() {
+                const { currentQuiz, currentQuestionIndex, isAnswerChecked } = this.state;
+                if (currentQuiz.length === 0) return this.renderHomeView();
+
+                const questionObj = currentQuiz[currentQuestionIndex];
+
+                const main = document.createElement('main');
+                main.className = 'flex flex-1 flex-col px-4';
+
+                // Question Title (matching code.html style)
+                main.innerHTML += `
+                    <h1 class="tracking-tight text-[32px] font-bold leading-tight text-[#111618] dark:text-white pt-8 pb-6">
+                        ${questionObj.question}
+                    </h1>
+                `;
+
+                // Options Container
+                const optionsList = document.createElement('div');
+                optionsList.className = 'flex flex-col gap-3 pb-8';
+
+                questionObj.options.forEach((option, index) => {
+                    let classes = 'flex cursor-pointer items-center gap-4 rounded-xl border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 transition-all text-[#111618] dark:text-gray-100';
+                    let radioClasses = 'h-5 w-5 shrink-0 border-2 border-gray-300 dark:border-gray-600 bg-transparent text-primary focus:ring-primary focus:ring-offset-0';
+                    let onclick = `App.selectOption(${index})`;
+                    let checked = index === this.state.selectedOptionIndex ? 'checked' : '';
+
+                    if (isAnswerChecked) {
+                        onclick = ''; // Disable clicking after check
+                        if (index === questionObj.answer) {
+                            // Correct answer
+                            classes = 'flex items-center gap-4 rounded-xl border-2 border-green-500 bg-green-50 dark:bg-green-900/50 p-4 shadow-md text-green-800 dark:text-green-300 font-semibold';
+                            radioClasses = 'h-5 w-5 shrink-0 border-2 border-green-500 bg-green-500 text-white focus:ring-green-500 focus:ring-offset-0';
+                        } else if (index === this.state.selectedOptionIndex) {
+                            // Selected incorrect answer
+                            classes = 'flex items-center gap-4 rounded-xl border-2 border-red-500 bg-red-50 dark:bg-red-900/50 p-4 shadow-md text-red-800 dark:text-red-300 font-semibold';
+                            radioClasses = 'h-5 w-5 shrink-0 border-2 border-red-500 bg-red-500 text-white focus:ring-red-500 focus:ring-offset-0';
+                        } else {
+                            // Unselected incorrect answer
+                            classes = 'flex items-center gap-4 rounded-xl border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-gray-400';
+                            radioClasses = 'h-5 w-5 shrink-0 border-2 border-gray-300 dark:border-gray-600 bg-transparent text-primary focus:ring-primary focus:ring-offset-0';
+                        }
+                    } else if (checked) {
+                         // Selected before check (use primary highlight from design)
+                        classes = 'flex cursor-pointer items-center gap-4 rounded-xl border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 transition-all has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/50 has-[:checked]:bg-primary/10 dark:has-[:checked]:bg-primary/20 dark:has-[:checked]:border-primary';
+                    }
+
+
+                    optionsList.innerHTML += `
+                        <label class="${classes}" onclick="${onclick}">
+                            <div class="flex grow flex-col">
+                                <p class="text-base font-medium leading-normal">${option}</p>
+                            </div>
+                            <input class="${radioClasses}" name="quiz-answer" type="radio" ${checked} ${isAnswerChecked ? 'disabled' : ''}>
+                        </label>
+                    `;
+                });
+                main.appendChild(optionsList);
+                return main;
+            },
+            
+            renderQuizFooter() {
+                const { isAnswerChecked, selectedOptionIndex, currentQuestionIndex, currentQuiz } = this.state;
+                const footer = document.createElement('footer');
+                
+                // Footer styles from code.html
+                footer.className = 'sticky bottom-0 mt-auto bg-background-light dark:bg-background-dark pt-4 pb-6 px-4 border-t border-gray-200 dark:border-gray-800 shadow-xl';
+                
+                let buttonContent = '';
+                let buttonAction = '';
+                let isDisabled = false;
+
+                if (!isAnswerChecked) {
+                    buttonContent = 'Check Answer';
+                    buttonAction = 'App.checkAnswer()';
+                    isDisabled = selectedOptionIndex === null;
+                } else {
+                    const isLast = currentQuestionIndex === currentQuiz.length - 1;
+                    buttonContent = isLast ? 'View Results' : 'Next Question';
+                    buttonAction = 'App.nextQuestion()';
+                }
+
+                const buttonClasses = `flex w-full min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-5 
+                                      ${isAnswerChecked ? 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-500/30' : 'bg-primary hover:bg-primary/90 shadow-primary/30'}
+                                      text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg transition-transform duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98] ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`;
+
+
+                footer.innerHTML = `
+                    <button onclick="${buttonAction}" ${isDisabled ? 'disabled' : ''} class="${buttonClasses}">
+                        <span class="truncate">${buttonContent}</span>
+                    </button>
+                `;
+                
+                return footer;
+            },
+
+
+            renderResultsView() {
+                const { score, currentQuiz, currentChapter, username } = this.state;
+                const total = currentQuiz.length;
+                const percentage = ((score / total) * 100).toFixed(1);
+                const isPass = percentage >= 70;
+                const title = isPass ? 'Excellent Work!' : 'Review Time!';
+
+                const main = document.createElement('main');
+                main.className = 'flex flex-1 flex-col px-4 pt-8 pb-4 w-full';
+                
+                main.innerHTML = `
+                    <div class="p-8 text-center bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700">
+                        <h2 class="text-4xl font-extrabold ${isPass ? 'text-green-500' : 'text-red-500'} mb-4">${title}</h2>
+                        <p class="text-xl text-[#617f89] dark:text-gray-400 mb-2">Well done, **${username}**!</p>
+                        <p class="text-lg text-[#617f89] dark:text-gray-400 mb-8">Your result for **${currentChapter}**:</p>
+                        
+                        <div class="w-48 h-48 mx-auto mb-8 bg-background-light dark:bg-gray-700 rounded-full flex items-center justify-center border-4 ${isPass ? 'border-green-500' : 'border-red-500'} shadow-inner">
+                            <p class="text-6xl font-black ${isPass ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}">${percentage}%</p>
+                        </div>
+                        
+                        <p class="text-lg font-medium text-[#111618] dark:text-gray-100 mb-6">${score} correct answers out of ${total} questions.</p>
+
+                        <button onclick="App.setView('home')"
+                            class="mt-4 w-full md:w-auto px-6 h-14 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/30 transition-transform duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98]">
+                            <span class="truncate">Start a New Chapter</span>
+                        </button>
+                    </div>
+                `;
+                return main;
+            },
+
+            renderSupportView() {
+                const main = document.createElement('main');
+                main.className = 'flex flex-1 flex-col px-4 pt-8 pb-4 w-full';
+                
+                // Placeholder QR Code URL (Generic black/white 250x250 placeholder)
+                const qrCodeUrl = "https://placehold.co/250x250/13b6ec/FFFFFF?text=Scan+to+Support";
+                
+                main.innerHTML = `
+                    <div class="p-8 text-center bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700">
+                        <h2 class="text-3xl font-extrabold text-primary mb-4">Support Our Mission</h2>
+                        <p class="text-[#617f89] dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+                            If this platform helped you learn, consider making a small contribution. 
+                            Your generosity keeps the content free, high-quality, and always accessible.
+                        </p>
+                        
+                        <div class="bg-background-light dark:bg-gray-700 p-6 rounded-xl inline-block shadow-inner mb-6">
+                            <h3 class="text-xl font-semibold text-[#111618] dark:text-gray-100 mb-4">One-Time Contribution</h3>
+                            <img src="${qrCodeUrl}" alt="Support QR Code" class="w-48 h-48 mx-auto rounded-lg shadow-lg border-4 border-white dark:border-gray-800 mb-4" 
+                                 onerror="this.onerror=null;this.src='https://placehold.co/250x250/13b6ec/ffffff?text=QR+Code+Error';">
+                            <p class="text-sm text-[#617f89] dark:text-gray-400">Scan this code with your preferred payment app.</p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button onclick="App.setView('home')"
+                                class="px-6 h-14 border border-primary text-primary font-semibold rounded-xl hover:bg-primary/10 transition duration-150">
+                                <span class="truncate">Back to Learning</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return main;
+            },
+
+            // --- STATE MUTATORS ---
+            setView(view) {
+                this.state.view = view;
+                this.render();
+            },
+
+            startQuiz(subjectId, chapterId) {
+                const subject = MOCK_QUIZ_DATA.find(s => s.id === subjectId);
+                const chapter = subject ? subject.chapters.find(c => c.id === chapterId) : null;
+
+                if (chapter) {
+                    this.state = {
+                        ...this.state,
+                        view: 'quiz',
+                        currentSubject: subject.subject,
+                        currentChapter: chapter.title,
+                        currentQuiz: chapter.quizzes,
+                        currentQuestionIndex: 0,
+                        score: 0,
+                        selectedOptionIndex: null,
+                        isAnswerChecked: false,
+                    };
+                    this.render();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    console.error("Quiz content not found.");
+                    this.setView('home');
+                }
+            },
+
+            selectOption(index) {
+                if (!this.state.isAnswerChecked) {
+                    this.state.selectedOptionIndex = index;
+                    this.render();
+                }
+            },
+
+            checkAnswer() {
+                if (this.state.selectedOptionIndex === null) {
+                    this.showMessage("Please select an answer before checking.", "error");
+                    return;
+                }
+
+                const { currentQuiz, currentQuestionIndex, selectedOptionIndex, score } = this.state;
+                const questionObj = currentQuiz[currentQuestionIndex];
+
+                if (selectedOptionIndex === questionObj.answer) {
+                    this.state.score = score + 1;
+                    this.showMessage("Correct! Great job!", "success");
+                } else {
+                    this.showMessage("Incorrect. Review the correct answer highlighted in green.", "error");
+                }
+
+                this.state.isAnswerChecked = true;
+                this.render();
+            },
+
+            nextQuestion() {
+                const { currentQuiz, currentQuestionIndex } = this.state;
+
+                if (currentQuestionIndex < currentQuiz.length - 1) {
+                    this.state.currentQuestionIndex += 1;
+                    this.state.selectedOptionIndex = null;
+                    this.state.isAnswerChecked = false;
+                    this.render();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    // End of quiz
+                    this.saveQuizResult(); // Save result before showing results view
+                    this.setView('results');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            },
+            
+            toggleDarkMode() {
+                this.state.isDarkMode = !this.state.isDarkMode;
+                this.render(); // Re-render to update the body class and header icon
+            },
+            
+            showMessage(message, type = 'info') {
+                // Simple message box implementation (instead of alert)
+                let messageBox = document.getElementById('message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'message-box';
+                    // Append directly to body to ensure it's on top of everything
+                    document.body.appendChild(messageBox);
+                }
+
+                const baseClasses = 'fixed top-4 right-4 z-[100] p-4 rounded-xl shadow-lg transition-all duration-300 transform';
+                let typeClasses = 'bg-primary'; // default info
+                
+                if (type === 'error') typeClasses = 'bg-red-500';
+                if (type === 'success') typeClasses = 'bg-green-500';
+
+                // Set content and classes
+                messageBox.innerHTML = `<p class="text-white font-semibold">${message}</p>`;
+                messageBox.className = `${baseClasses} ${typeClasses} opacity-100 translate-y-0`;
+
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    messageBox.className = `${baseClasses} ${typeClasses} opacity-0 translate-y-[-10px]`;
+                }, 3000);
+            },
+
+
+            // --- INITIALIZATION ---
+            init() {
+                this.loadState();
+                
+                // Check local storage for dark mode preference and initial system preference
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    this.state.isDarkMode = true;
+                }
+
+                this.setupPWA();
+                this.render(); // Always call render to show the initial view (onboarding or home)
+            },
+
+            // PWA SETUP (Same as before)
+            setupPWA() {
+                if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', () => {
+                        try {
+                            const swScriptContent = document.getElementById('sw-script').textContent;
+                            const swBlob = new Blob([swScriptContent], { type: 'application/javascript' });
+                            const swUrl = URL.createObjectURL(swBlob);
+
+                            navigator.serviceWorker.register(swUrl).then((registration) => {
+                                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                            }, (err) => {
+                                console.log('ServiceWorker registration failed: ', err);
+                            });
+                        } catch (e) {
+                            console.error('Error during PWA setup (Blob creation/registration):', e);
+                        }
+                    });
+                }
+            }
+        };
+
+        // Start the application
+        window.onload = () => {
+            App.init();
+        };
+    </script>
+</body>
+</html>
