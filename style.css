@@ -1,0 +1,158 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.calculator {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    width: 100%;
+    max-width: 400px;
+}
+
+.header {
+    background: #1e40af;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.install-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.install-btn:hover {
+    background: #059669;
+    transform: translateY(-2px);
+}
+
+.install-btn:active {
+    transform: translateY(0);
+}
+
+.install-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.display {
+    background: #2563eb;
+    color: white;
+    padding: 30px 20px;
+    text-align: right;
+    font-size: 2.5rem;
+    min-height: 100px;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: #e5e7eb;
+    padding: 1px;
+}
+
+button {
+    background: white;
+    border: none;
+    padding: 25px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+button:hover {
+    background: #f3f4f6;
+}
+
+button:active {
+    background: #e5e7eb;
+    transform: scale(0.95);
+}
+
+.operator {
+    background: #fbbf24;
+    color: white;
+}
+
+.operator:hover {
+    background: #f59e0b;
+}
+
+.equals {
+    background: #10b981;
+    color: white;
+    grid-column: span 2;
+}
+
+.equals:hover {
+    background: #059669;
+}
+
+.clear {
+    background: #ef4444;
+    color: white;
+}
+
+.clear:hover {
+    background: #dc2626;
+}
+
+.zero {
+    grid-column: span 2;
+}
+
+@media (max-width: 480px) {
+    .display {
+        font-size: 2rem;
+        padding: 20px 15px;
+    }
+    
+    button {
+        padding: 20px;
+        font-size: 1.3rem;
+    }
+    
+    .header h1 {
+        font-size: 1rem;
+    }
+    
+    .install-btn {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+}
