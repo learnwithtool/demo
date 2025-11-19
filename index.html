@@ -1,189 +1,54 @@
 <!DOCTYPE html>
-
-<html class="dark" lang="en">
+<html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Science Quiz</title>
-
-<!-- PWA Metadata - Required for Browser Install Prompts -->
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="application-name" content="Science Quiz">
-<meta name="apple-mobile-web-app-title" content="Science Quiz">
-<meta name="theme-color" content="#13b6ec">
-<meta name="msapplication-navbutton-color" content="#13b6ec">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<!-- In a real app, this link would point to a separate manifest.json file -->
-<link rel="manifest" href="data:application/json;base64,eyJpY29ucyI6W3sic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyIsInNyYyI6Ii9pY29uLTE5Mi5wbmcifSx7InNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmciLCJzcmMiOiIvaWNvbi01MTIucG5nIn1dLm5hbWUiOiJTY2llbmNlIFF1aXoiLCJzaG9ydF9uYW1lIjoiUXVpeiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwic3RhcnRfdXJsIjoiLyIsImJhY2tncm91bmRfY29sb3IiOiIjMTExNjE4IiwidGhlbWVfY29sb3IiOiIjMTNiNmVjIn0=">
-
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-<style>
-      /* Ensure the 'dark' class is always active for a consistent dark-mode look */
-      :root {
-        color-scheme: dark;
-      }
-      body {
-        background-color: #101d22;
-      }
-
-      .material-symbols-outlined {
-        font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24
-      }
-      /* Custom utility for initially hiding the install button */
-      .hidden-install {
-          display: none;
-      }
-</style>
-<script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              "primary": "#13b6ec",
-              "background-light": "#f6f8f8",
-              "background-dark": "#101d22",
-            },
-            fontFamily: {
-              "display": ["Lexend", "sans-serif"]
-            },
-            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem"}
-          }
-        }
-      }
-</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="A simple calculator Progressive Web App">
+    <title>Calculator PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
 </head>
-
-<body class="min-h-screen flex flex-col font-display bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 antialiased">
-
-<!-- Header (Always visible) -->
-<header class="sticky top-0 z-10 w-full bg-white dark:bg-gray-900/95 backdrop-blur-md shadow-md p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-    <div class="flex items-center gap-4">
-        <button class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
-            <span class="material-symbols-outlined">arrow_back</span>
-        </button>
-        <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">Science Quiz</h1>
-    </div>
-    
-    <!-- PWA Install Button -->
-    <button id="installButton" class="hidden-install flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white shadow-md hover:bg-primary/90 transition-colors" aria-label="Install App">
-        <span class="material-symbols-outlined text-lg">download</span>
-        Install App
-    </button>
-</header>
-
-<main class="flex-grow p-4 space-y-6 max-w-xl mx-auto w-full">
-    <!-- Quiz Progress Indicator -->
-    <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-        <span class="font-medium">Question 4 of 10</span>
-        <div class="flex-grow h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <div class="h-full bg-primary rounded-full" style="width: 40%;"></div>
+<body>
+    <div class="calculator">
+        <div class="header">
+            <h1>Calculator</h1>
+            <button class="install-btn" id="installBtn" style="display: none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Install App
+            </button>
+        </div>
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button class="operator" onclick="appendOperator('/')">/</button>
+            <button class="operator" onclick="appendOperator('*')">×</button>
+            <button class="operator" onclick="deleteLast()">⌫</button>
+            
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="appendOperator('-')">−</button>
+            
+            <button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="appendOperator('+')">+</button>
+            
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+            <button class="equals" onclick="calculate()">=</button>
+            
+            <button class="zero" onclick="appendNumber('0')">0</button>
+            <button onclick="appendNumber('.')">.</button>
         </div>
     </div>
 
-    <!-- Question Card -->
-    <div class="rounded-2xl border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-xl space-y-4">
-        <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">Which cellular organelle is primarily responsible for protein synthesis?</p>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Select the single best answer.</p>
-    </div>
-
-    <!-- Answer Options -->
-    <div class="space-y-3">
-        <!-- Option 1: Mitochondria (Incorrect) -->
-        <label class="flex cursor-pointer items-center gap-4 rounded-xl border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 transition-all has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/50 has-[:checked]:bg-primary/10 dark:has-[:checked]:bg-primary/20 dark:has-[:checked]:border-primary">
-            <div class="flex grow flex-col">
-                <p class="text-base font-medium leading-normal text-[#111618] dark:text-gray-100">Mitochondria</p>
-            </div>
-            <input class="h-5 w-5 shrink-0 border-2 border-gray-300 dark:border-gray-600 bg-transparent text-primary focus:ring-primary focus:ring-offset-0" name="quiz-answer" type="radio"/>
-        </label>
-        
-        <!-- Option 2: Nucleus (Incorrect) -->
-        <label class="flex cursor-pointer items-center gap-4 rounded-xl border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 transition-all has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/50 has-[:checked]:bg-primary/10 dark:has-[:checked]:bg-primary/20 dark:has-[:checked]:border-primary">
-            <div class="flex grow flex-col">
-                <p class="text-base font-medium leading-normal text-[#111618] dark:text-gray-100">Nucleus</p>
-            </div>
-            <input class="h-5 w-5 shrink-0 border-2 border-gray-300 dark:border-gray-600 bg-transparent text-primary focus:ring-primary focus:ring-offset-0" name="quiz-answer" type="radio"/>
-        </label>
-        
-        <!-- Option 3: Ribosome (Correct) -->
-        <label class="flex cursor-pointer items-center gap-4 rounded-xl border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 transition-all has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/50 has-[:checked]:bg-primary/10 dark:has-[:checked]:bg-primary/20 dark:has-[:checked]:border-primary">
-            <div class="flex grow flex-col">
-                <p class="text-base font-medium leading-normal text-[#111618] dark:text-gray-100">Ribosome</p>
-            </div>
-            <input class="h-5 w-5 shrink-0 border-2 border-gray-300 dark:border-gray-600 bg-transparent text-primary focus:ring-primary focus:ring-offset-0" name="quiz-answer" type="radio"/>
-        </label>
-        
-        <!-- Option 4: Endoplasmic Reticulum (Incorrect - ER is involved, but ribosomes are the primary site) -->
-        <label class="flex cursor-pointer items-center gap-4 rounded-xl border border-solid border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 transition-all has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/50 has-[:checked]:bg-primary/10 dark:has-[:checked]:bg-primary/20 dark:has-[:checked]:border-primary">
-            <div class="flex grow flex-col">
-                <p class="text-base font-medium leading-normal text-[#111618] dark:text-gray-100">Endoplasmic Reticulum</p>
-            </div>
-            <input class="h-5 w-5 shrink-0 border-2 border-gray-300 dark:border-gray-600 bg-transparent text-primary focus:ring-primary focus:ring-offset-0" name="quiz-answer" type="radio"/>
-        </label>
-    </div>
-</main>
-
-<!-- Footer / Action Bar -->
-<footer class="sticky bottom-0 mt-auto bg-background-dark pt-4 pb-6 px-4 border-t border-gray-700 shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
-    <button class="flex w-full min-w-[80px] items-center justify-center rounded-xl bg-primary px-6 py-3 text-lg font-semibold text-white shadow-xl shadow-primary/30 transition-all hover:bg-primary/90 focus:outline-none focus:ring-4 focus:ring-primary/50">
-        Check Answer
-    </button>
-</footer>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const installButton = document.getElementById('installButton');
-        let deferredPrompt;
-
-        // 1. Listen for the 'beforeinstallprompt' event (Browser PWA detection)
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent the mini-infobar from appearing on mobile
-            e.preventDefault(); 
-            // Stash the event so it can be triggered later.
-            deferredPrompt = e;
-            // Show the custom install button
-            installButton.classList.remove('hidden-install');
-            console.log('beforeinstallprompt fired and button is visible.');
-        });
-
-        // 2. Handle the custom install button click
-        installButton.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                // Show the browser's native installation prompt
-                deferredPrompt.prompt(); 
-                
-                // Wait for the user to respond to the prompt
-                const { outcome } = await deferredPrompt.userChoice; 
-                
-                console.log(`User response to the install prompt: ${outcome}`);
-                
-                // If the user accepts, hide the button
-                if (outcome === 'accepted') {
-                    installButton.classList.add('hidden-install');
-                }
-                
-                // Clear the deferred prompt variable
-                deferredPrompt = null;
-            }
-        });
-        
-        // 3. Listen for the 'appinstalled' event (Installation succeeded)
-        window.addEventListener('appinstalled', () => {
-            // Hide the button if the app is successfully installed
-            installButton.classList.add('hidden-install');
-            console.log('PWA was installed successfully.');
-        });
-    });
-</script>
-
+    <script src="app.js"></script>
 </body>
 </html>
